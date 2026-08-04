@@ -4,7 +4,7 @@
 {% block content %}
 <div class="page-header">
   <h1>Evidence</h1>
-  <a href="{{ url_for('evidence.upload') }}" class="btn">Upload evidence</a>
+  {% if not snapshot_mode %}<a href="{{ url_for('evidence.upload') }}" class="btn">Upload evidence</a>{% endif %}
 </div>
 
 <form method="get" class="filter-bar">
@@ -39,11 +39,13 @@
           {% endif %}
         </td>
         <td>
+          {% if not snapshot_mode %}
           <form method="post" action="{{ url_for('evidence.delete_evidence', evidence_id=ev.id) }}" class="inline"
             onsubmit="return confirm('Delete this evidence file? This cannot be undone.');">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-danger btn-sm">Delete</button>
           </form>
+          {% endif %}
         </td>
       </tr>
     {% endfor %}
@@ -51,6 +53,9 @@
   </table>
 </div>
 {% else %}
-<div class="empty-state">No evidence uploaded yet. <a href="{{ url_for('evidence.upload') }}">Upload the first file</a>.</div>
+<div class="empty-state">
+  No evidence uploaded yet.
+  {% if not snapshot_mode %}<a href="{{ url_for('evidence.upload') }}">Upload the first file</a>.{% endif %}
+</div>
 {% endif %}
 {% endblock %}

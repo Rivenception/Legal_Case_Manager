@@ -3,7 +3,7 @@
 {% block content %}
 <div class="page-header">
   <h1>Tasks &amp; deadlines</h1>
-  <a href="{{ url_for('tasks.new_task') }}" class="btn">Add task</a>
+  {% if not snapshot_mode %}<a href="{{ url_for('tasks.new_task') }}" class="btn">Add task</a>{% endif %}
 </div>
 
 <p>
@@ -17,21 +17,26 @@
 {% if items %}
 <div class="table-wrap">
   <table>
-    <thead><tr><th></th><th>Due</th><th>Task</th><th></th></tr></thead>
+    <thead><tr><th></th><th>Due</th><th>Task</th>{% if not snapshot_mode %}<th></th>{% endif %}</tr></thead>
     <tbody>
     {% for t in items %}
       <tr class="{% if t.done %}done-row{% endif %}">
         <td>
+          {% if not snapshot_mode %}
           <form method="post" action="{{ url_for('tasks.toggle_task', task_id=t.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="checkbox" onchange="this.form.submit()" {% if t.done %}checked{% endif %}>
           </form>
+          {% else %}
+          {% if t.done %}✓{% else %}—{% endif %}
+          {% endif %}
         </td>
         <td class="{% if t.due_date and not t.done and t.due_date < today %}overdue{% endif %}">
           {{ t.due_date.strftime('%Y-%m-%d') if t.due_date else '—' }}
           {% if t.due_date and not t.done and t.due_date < today %}(overdue){% endif %}
         </td>
         <td>{{ t.description }}</td>
+        {% if not snapshot_mode %}
         <td class="actions">
           <a href="{{ url_for('tasks.edit_task', task_id=t.id) }}" class="btn btn-secondary btn-sm">Edit</a>
           <form method="post" action="{{ url_for('tasks.delete_task', task_id=t.id) }}" class="inline"
@@ -40,12 +45,16 @@
             <button type="submit" class="btn btn-danger btn-sm">Delete</button>
           </form>
         </td>
+        {% endif %}
       </tr>
     {% endfor %}
     </tbody>
   </table>
 </div>
 {% else %}
-<div class="empty-state">No tasks. <a href="{{ url_for('tasks.new_task') }}">Add one</a>.</div>
+<div class="empty-state">
+  No tasks.
+  {% if not snapshot_mode %}<a href="{{ url_for('tasks.new_task') }}">Add one</a>.{% endif %}
+</div>
 {% endif %}
 {% endblock %}

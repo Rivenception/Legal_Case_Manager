@@ -4,6 +4,7 @@
 {% block content %}
 <div class="page-header">
   <h1>{{ entry.occurred_at.strftime('%Y-%m-%d %H:%M') }}</h1>
+  {% if not snapshot_mode %}
   <div class="actions">
     <a href="{{ url_for('timeline.edit_entry', entry_id=entry.id) }}" class="btn btn-secondary">Edit</a>
     <form method="post" action="{{ url_for('timeline.delete_entry', entry_id=entry.id) }}" class="inline"
@@ -12,6 +13,7 @@
       <button type="submit" class="btn btn-danger">Delete</button>
     </form>
   </div>
+  {% endif %}
 </div>
 
 <div class="card">

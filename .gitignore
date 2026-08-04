@@ -28,3 +28,9 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Snapshot exe build artifacts (contain a copy of case data — never commit)
+_snapshot_build/
+snapshot_dist/
+build/
+*.spec

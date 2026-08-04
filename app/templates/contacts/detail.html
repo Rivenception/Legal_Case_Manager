@@ -3,6 +3,7 @@
 {% block content %}
 <div class="page-header">
   <h1>{{ person.name }}</h1>
+  {% if not snapshot_mode %}
   <div class="actions">
     <a href="{{ url_for('contacts.edit_person', person_id=person.id) }}" class="btn btn-secondary">Edit</a>
     <form method="post" action="{{ url_for('contacts.delete_person', person_id=person.id) }}" class="inline"
@@ -11,6 +12,7 @@
       <button type="submit" class="btn btn-danger">Delete</button>
     </form>
   </div>
+  {% endif %}
 </div>
 
 <div class="card">

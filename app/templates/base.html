@@ -28,6 +28,12 @@
 </header>
 {% endif %}
 
+{% if snapshot_mode %}
+<div class="snapshot-banner">
+  Read-only case snapshot{% if snapshot_built_at %} — generated {{ snapshot_built_at }}{% endif %}. Viewing and downloading only; editing is disabled.
+</div>
+{% endif %}
+
 <main class="container">
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}

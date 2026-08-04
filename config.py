@@ -1,13 +1,25 @@
 import os
 import secrets
+import sys
 
 from dotenv import load_dotenv
 
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-INSTANCE_DIR = os.path.join(BASE_DIR, "instance")
+if getattr(sys, "frozen", False):
+    # Running as a PyInstaller-built executable — bundled files are
+    # extracted to a temp dir at sys._MEIPASS, not laid out like the repo.
+    BASE_DIR = sys._MEIPASS
+else:
+    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+# Snapshot builds (see build_snapshot.py) point this at their own bundled
+# copy of instance/ instead of the normal project-relative one.
+INSTANCE_DIR = os.environ.get("CASE_TRACKER_INSTANCE_DIR") or os.path.join(BASE_DIR, "instance")
 UPLOAD_DIR = os.path.join(INSTANCE_DIR, "uploads")
 
-load_dotenv(os.path.join(BASE_DIR, ".env"))
+SNAPSHOT_MODE = os.environ.get("SNAPSHOT_MODE", "false").strip().lower() in ("1", "true", "yes")
+
+if not getattr(sys, "frozen", False):
+    load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 _SECRET_KEY_FILE = os.path.join(INSTANCE_DIR, "secret_key.txt")
 
@@ -38,6 +50,9 @@ class Config:
         "mp4", "mov", "avi", "mkv",
         "mp3", "wav", "m4a",
     }
+
+    SNAPSHOT_MODE = SNAPSHOT_MODE
+    SNAPSHOT_READONLY_USERNAME = "Read_Only"
 
     # SMTP settings for "forgot password" emails. Leave MAIL_SERVER unset to
     # disable emailing (reset links will just be logged instead of sent).

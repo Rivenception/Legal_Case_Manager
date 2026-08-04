@@ -15,7 +15,7 @@
 <div class="card">
   <div class="page-header">
     <h2 style="margin:0">Recent timeline entries</h2>
-    <a href="{{ url_for('timeline.new_entry') }}" class="btn btn-sm">Add entry</a>
+    {% if not snapshot_mode %}<a href="{{ url_for('timeline.new_entry') }}" class="btn btn-sm">Add entry</a>{% endif %}
   </div>
   {% if recent_entries %}
   <div class="table-wrap">
@@ -44,14 +44,17 @@
     </table>
   </div>
   {% else %}
-  <div class="empty-state">No timeline entries yet. <a href="{{ url_for('timeline.new_entry') }}">Add the first one</a>.</div>
+  <div class="empty-state">
+    No timeline entries yet.
+    {% if not snapshot_mode %}<a href="{{ url_for('timeline.new_entry') }}">Add the first one</a>.{% endif %}
+  </div>
   {% endif %}
 </div>
 
 <div class="card">
   <div class="page-header">
     <h2 style="margin:0">Upcoming tasks</h2>
-    <a href="{{ url_for('tasks.new_task') }}" class="btn btn-sm">Add task</a>
+    {% if not snapshot_mode %}<a href="{{ url_for('tasks.new_task') }}" class="btn btn-sm">Add task</a>{% endif %}
   </div>
   {% if upcoming_tasks %}
   <div class="table-wrap">
@@ -68,7 +71,10 @@
     </table>
   </div>
   {% else %}
-  <div class="empty-state">No open tasks. <a href="{{ url_for('tasks.new_task') }}">Add one</a>.</div>
+  <div class="empty-state">
+    No open tasks.
+    {% if not snapshot_mode %}<a href="{{ url_for('tasks.new_task') }}">Add one</a>.{% endif %}
+  </div>
   {% endif %}
 </div>
 {% endblock %}

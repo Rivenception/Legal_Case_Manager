@@ -3,7 +3,7 @@
 {% block content %}
 <div class="page-header">
   <h1>Contacts</h1>
-  <a href="{{ url_for('contacts.new_person') }}" class="btn">Add person</a>
+  {% if not snapshot_mode %}<a href="{{ url_for('contacts.new_person') }}" class="btn">Add person</a>{% endif %}
 </div>
 
 {% if people %}
@@ -22,6 +22,9 @@
   </table>
 </div>
 {% else %}
-<div class="empty-state">No contacts yet. <a href="{{ url_for('contacts.new_person') }}">Add the first one</a>.</div>
+<div class="empty-state">
+  No contacts yet.
+  {% if not snapshot_mode %}<a href="{{ url_for('contacts.new_person') }}">Add the first one</a>.{% endif %}
+</div>
 {% endif %}
 {% endblock %}

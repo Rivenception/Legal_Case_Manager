@@ -15,6 +15,8 @@ home network — nothing is sent to the cloud.
 - **Export** — printable HTML report of the full timeline (use your browser's Print → Save as PDF)
 - **Admin & password reset** — admin users can view all accounts and set/edit emails; any user can reset a
   forgotten password via an emailed link (requires SMTP setup, see below)
+- **Case snapshot exe** — build a standalone, read-only `.exe` containing a point-in-time copy of the whole
+  case (data + evidence files) that you can hand to someone outside the family, like a lawyer — see below
 
 ## Requirements
 
@@ -153,16 +155,22 @@ Legal_Case_Manager/
 │   ├── mail.py          # SMTP sending for password-reset emails
 │   └── extensions.py
 ├── instance/            # SQLite DB + uploaded evidence (gitignored)
+├── snapshot_dist/        # build_snapshot.py output (gitignored)
 ├── config.py
 ├── manage.py             # CLI: init-db, create-user, make-admin, etc.
 ├── run.py                # start the server
+├── snapshot_main.py       # entry point for the snapshot exe
+├── build_snapshot.py      # builds the read-only snapshot exe
 ├── .env.example          # copy to .env for SMTP/password-reset setup
-└── requirements.txt
+├── requirements.txt
+└── requirements-build.txt # only needed to build a snapshot exe
 ```
 
 ## Notes on privacy
 
 - All data (database + uploaded files) lives under `instance/`, which is excluded from Git.
+- `snapshot_dist/` (built snapshot exes and their credentials files) is also excluded from
+  Git — they contain a full copy of your case data and should be shared deliberately, not committed.
 - Do not deploy this to a public server or port-forward it to the internet — it's designed
   for trusted use on a private home network only.
 - All logged-in users see the same shared case data; there's no per-user data isolation,
@@ -171,6 +179,77 @@ Legal_Case_Manager/
   Admin page — grant admin only to accounts that should have that visibility.
 - SMTP credentials in `.env` (if configured) can send email as that account — treat them
   like a password and never commit `.env`.
+
+## Creating a case snapshot (for the case owner)
+
+If you want to share the current state of the case with someone outside the family — a
+lawyer, for example — without giving them access to the live app, you can build a
+standalone `.exe` that bundles the app together with a **point-in-time copy** of
+everything currently in `instance/` (the database and all evidence files). The
+recipient just double-clicks it; nothing needs to be installed on their end, and
+nothing they do in it can affect your live data.
+
+**One-time setup**, in addition to the normal install steps above:
+```bash
+pip install -r requirements-build.txt
+```
+
+**Every time you want a fresh snapshot:**
+```bash
+python build_snapshot.py
+```
+
+This can take a minute or two. When it finishes, look in the new `snapshot_dist/` folder for:
+- `CaseTracker_Snapshot_<date>.exe` — the program itself
+- `README_login_<date>.txt` — the login credentials to pass along (see below)
+
+A few things worth knowing:
+- **File size.** The exe bundles all your evidence files, so it will be roughly as
+  large as your `instance/` folder plus ~15 MB for the app itself. Most email
+  providers cap attachments around 20–25 MB — the build script warns you if the
+  result is bigger, in which case share it via a private cloud folder or file-transfer
+  link (WeTransfer, OneDrive, Google Drive, etc.) rather than attaching it directly.
+- **Unsigned executable.** Since it isn't digitally signed, Windows SmartScreen (and
+  possibly the recipient's antivirus or their company's email filter) may flag it.
+  Let the recipient know to expect a "Windows protected your PC" prompt — they can
+  click "More info" → "Run anyway". Some corporate email systems block `.exe`
+  attachments outright regardless of size, which is another reason a share-link is
+  often more reliable than a direct attachment.
+- **It's read-only.** Every snapshot logs in as a dedicated `Read_Only` account with a
+  freshly generated password each build. All "Add / Edit / Delete / Upload" controls
+  are hidden, and the app also rejects any edit attempt server-side — so even if
+  someone tries to force one through, nothing in the snapshot can be changed.
+- **It doesn't touch your live data.** The build only *reads* from `instance/` to make
+  a copy; your running app and real database are never modified by this process.
+- **Other accounts' passwords aren't included.** Real family member password hashes
+  are scrubbed from the snapshot's copy of the database — only the `Read_Only`
+  account can actually log into it.
+- Re-running `python build_snapshot.py` any time produces a brand-new snapshot (with a
+  new password) reflecting whatever is in `instance/` at that moment — nothing carries
+  over from a previous build.
+
+## Opening a shared snapshot (for the recipient)
+
+If someone sent you a `CaseTracker_Snapshot_<date>.exe` file (plus a matching
+`README_login_<date>.txt`):
+
+1. Save both files anywhere on your computer (they can go in the same folder).
+2. Double-click the `.exe` file.
+   - Windows will likely show a blue "Windows protected your PC" screen, since this
+     program isn't digitally signed by a registered publisher. Click **"More info"**,
+     then **"Run anyway"**.
+   - A black console window will open — that's the program running in the background.
+     Leave it open while you're using the app.
+3. Your default web browser should open automatically to the app. If it doesn't,
+   check the console window for a line like `Opening http://127.0.0.1:xxxxx/` and
+   paste that URL into your browser manually.
+4. Log in using the username and password from the `README_login_<date>.txt` file
+   (the account is called `Read_Only`).
+5. Browse the timeline, contacts, tasks, and evidence exactly as they existed when
+   the snapshot was made. You can view and download any evidence file, and use the
+   Export page for a printable report — but you cannot add, edit, or delete anything.
+6. When you're done, just close the black console window — that stops the program.
+   Nothing is uploaded anywhere; everything ran locally on your own computer.
 
 ## Local Access
 http://192.168.0.4:5000
