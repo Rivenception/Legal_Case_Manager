@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Evidence — Case Tracker{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Evidence</h1>
+  <a href="{{ url_for('evidence.upload') }}" class="btn">Upload evidence</a>
+</div>
+
+<form method="get" class="filter-bar">
+  <div class="form-group">
+    <label for="tag">Filter by tag</label>
+    <input type="text" id="tag" name="tag" value="{{ tag }}" placeholder="e.g. photo, letter">
+  </div>
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="{{ url_for('evidence.list_evidence') }}" class="btn btn-secondary">Reset</a>
+</form>
+
+{% if items %}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Uploaded</th><th>File</th><th>Description</th><th>Tags</th><th>Linked entry</th><th></th></tr></thead>
+    <tbody>
+    {% for ev in items %}
+      <tr>
+        <td>{{ ev.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td>
+          <a href="{{ url_for('evidence.download', evidence_id=ev.id) }}" class="btn btn-secondary btn-sm" title="Download {{ ev.original_filename }}">
+            {{ icons.download() }} {{ ev.original_filename }}
+          </a>
+        </td>
+        <td>{{ ev.description }}</td>
+        <td>{% for t in ev.tags.split(',') if t.strip() %}<span class="tag">{{ t.strip() }}</span>{% endfor %}</td>
+        <td>
+          {% if ev.timeline_entry %}
+            <a href="{{ url_for('timeline.view_entry', entry_id=ev.timeline_entry.id) }}">{{ ev.timeline_entry.occurred_at.strftime('%Y-%m-%d') }}</a>
+          {% else %}
+            <span class="meta">standalone</span>
+          {% endif %}
+        </td>
+        <td>
+          <form method="post" action="{{ url_for('evidence.delete_evidence', evidence_id=ev.id) }}" class="inline"
+            onsubmit="return confirm('Delete this evidence file? This cannot be undone.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">No evidence uploaded yet. <a href="{{ url_for('evidence.upload') }}">Upload the first file</a>.</div>
+{% endif %}
+{% endblock %}

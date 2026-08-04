@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Users — Admin — Case Tracker{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Users</h1>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Username</th><th>Email</th><th>Admin</th><th>Created</th><th></th></tr></thead>
+    <tbody>
+    {% for u in users %}
+      <tr>
+        <td>{{ u.username }}</td>
+        <td>{{ u.email or '—' }}</td>
+        <td>{% if u.is_admin %}<span class="tag">Admin</span>{% else %}—{% endif %}</td>
+        <td>{{ u.created_at.strftime('%Y-%m-%d') }}</td>
+        <td><a href="{{ url_for('admin.edit_user', user_id=u.id) }}" class="btn btn-secondary btn-sm">Edit</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

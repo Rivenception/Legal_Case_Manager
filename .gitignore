@@ -1,0 +1,30 @@
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Database and secrets
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploaded evidence (sensitive/personal, never committed)
+instance/uploads/
+
+# Editor/OS cruft
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+
+# Logs
+*.log

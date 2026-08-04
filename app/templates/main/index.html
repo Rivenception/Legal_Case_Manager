@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Dashboard — Case Tracker{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+
+<div class="stat-grid">
+  <div class="stat-card"><div class="stat-value">{{ stats.entries }}</div><div class="stat-label">Timeline entries</div></div>
+  <div class="stat-card"><div class="stat-value">{{ stats.people }}</div><div class="stat-label">People</div></div>
+  <div class="stat-card"><div class="stat-value">{{ stats.evidence }}</div><div class="stat-label">Evidence files</div></div>
+  <div class="stat-card"><div class="stat-value">{{ stats.open_tasks }}</div><div class="stat-label">Open tasks</div></div>
+  <div class="stat-card {% if stats.overdue_tasks %}warn{% endif %}"><div class="stat-value">{{ stats.overdue_tasks }}</div><div class="stat-label">Overdue tasks</div></div>
+</div>
+
+<div class="card">
+  <div class="page-header">
+    <h2 style="margin:0">Recent timeline entries</h2>
+    <a href="{{ url_for('timeline.new_entry') }}" class="btn btn-sm">Add entry</a>
+  </div>
+  {% if recent_entries %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>People</th><th>Evidence</th></tr></thead>
+      <tbody>
+      {% for e in recent_entries %}
+        <tr>
+          <td>{{ e.occurred_at.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td><a href="{{ url_for('timeline.view_entry', entry_id=e.id) }}">{{ e.description[:80] }}{% if e.description|length > 80 %}…{% endif %}</a></td>
+          <td>{{ e.category or '' }}</td>
+          <td>{% for p in e.people %}<span class="tag">{{ p.name }}</span>{% endfor %}</td>
+          <td>
+            {% if e.evidence %}
+              <a href="{{ url_for('evidence.download_all_for_entry', entry_id=e.id) }}" class="btn btn-secondary btn-sm"
+                title="Download all {{ e.evidence|length }} file(s)">
+                {{ icons.download_all() }} {{ e.evidence|length }}
+              </a>
+            {% else %}
+              <span class="meta">0</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No timeline entries yet. <a href="{{ url_for('timeline.new_entry') }}">Add the first one</a>.</div>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="page-header">
+    <h2 style="margin:0">Upcoming tasks</h2>
+    <a href="{{ url_for('tasks.new_task') }}" class="btn btn-sm">Add task</a>
+  </div>
+  {% if upcoming_tasks %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Due</th><th>Task</th></tr></thead>
+      <tbody>
+      {% for t in upcoming_tasks %}
+        <tr>
+          <td class="{% if t.due_date and t.due_date < today %}overdue{% endif %}">{{ t.due_date.strftime('%Y-%m-%d') if t.due_date else '—' }}</td>
+          <td>{{ t.description }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No open tasks. <a href="{{ url_for('tasks.new_task') }}">Add one</a>.</div>
+  {% endif %}
+</div>
+{% endblock %}

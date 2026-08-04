@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Tasks — Case Tracker{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Tasks &amp; deadlines</h1>
+  <a href="{{ url_for('tasks.new_task') }}" class="btn">Add task</a>
+</div>
+
+<p>
+  {% if show_done %}
+    <a href="{{ url_for('tasks.list_tasks') }}">Hide completed</a>
+  {% else %}
+    <a href="{{ url_for('tasks.list_tasks', show_done=1) }}">Show completed</a>
+  {% endif %}
+</p>
+
+{% if items %}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th></th><th>Due</th><th>Task</th><th></th></tr></thead>
+    <tbody>
+    {% for t in items %}
+      <tr class="{% if t.done %}done-row{% endif %}">
+        <td>
+          <form method="post" action="{{ url_for('tasks.toggle_task', task_id=t.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="checkbox" onchange="this.form.submit()" {% if t.done %}checked{% endif %}>
+          </form>
+        </td>
+        <td class="{% if t.due_date and not t.done and t.due_date < today %}overdue{% endif %}">
+          {{ t.due_date.strftime('%Y-%m-%d') if t.due_date else '—' }}
+          {% if t.due_date and not t.done and t.due_date < today %}(overdue){% endif %}
+        </td>
+        <td>{{ t.description }}</td>
+        <td class="actions">
+          <a href="{{ url_for('tasks.edit_task', task_id=t.id) }}" class="btn btn-secondary btn-sm">Edit</a>
+          <form method="post" action="{{ url_for('tasks.delete_task', task_id=t.id) }}" class="inline"
+            onsubmit="return confirm('Delete this task?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">No tasks. <a href="{{ url_for('tasks.new_task') }}">Add one</a>.</div>
+{% endif %}
+{% endblock %}

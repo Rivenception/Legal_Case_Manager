@@ -1,0 +1,30 @@
+# Normalize line endings to LF in the repo for all text files, regardless
+# of what any given contributor's local core.autocrlf is set to. Git still
+# checks files out using each platform's native line endings locally.
+* text=auto eol=lf
+
+*.py text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.cfg text eol=lf
+*.ini text eol=lf
+*.toml text eol=lf
+.gitattributes text eol=lf
+.gitignore text eol=lf
+
+# Windows-only scripts should always stay CRLF
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary files — never touch line endings
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.db binary

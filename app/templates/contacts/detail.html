@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ person.name }} — Case Tracker{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>{{ person.name }}</h1>
+  <div class="actions">
+    <a href="{{ url_for('contacts.edit_person', person_id=person.id) }}" class="btn btn-secondary">Edit</a>
+    <form method="post" action="{{ url_for('contacts.delete_person', person_id=person.id) }}" class="inline"
+      onsubmit="return confirm('Delete this contact? This cannot be undone.');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-danger">Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  {% if person.role %}<p><span class="tag">{{ person.role }}</span></p>{% endif %}
+  {% if person.notes %}<p style="white-space: pre-wrap">{{ person.notes }}</p>{% endif %}
+</div>
+
+{% if person.entries %}
+<h2>Timeline entries mentioning {{ person.name }}</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Date</th><th>Description</th></tr></thead>
+    <tbody>
+    {% for e in person.entries %}
+      <tr>
+        <td>{{ e.occurred_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td><a href="{{ url_for('timeline.view_entry', entry_id=e.id) }}">{{ e.description[:90] }}{% if e.description|length > 90 %}…{% endif %}</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<p><a href="{{ url_for('contacts.list_people') }}">&larr; Back to contacts</a></p>
+{% endblock %}

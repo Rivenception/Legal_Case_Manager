@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Timeline entry — Case Tracker{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>{{ entry.occurred_at.strftime('%Y-%m-%d %H:%M') }}</h1>
+  <div class="actions">
+    <a href="{{ url_for('timeline.edit_entry', entry_id=entry.id) }}" class="btn btn-secondary">Edit</a>
+    <form method="post" action="{{ url_for('timeline.delete_entry', entry_id=entry.id) }}" class="inline"
+      onsubmit="return confirm('Delete this timeline entry? This cannot be undone.');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-danger">Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  {% if entry.category %}<p><span class="tag">{{ entry.category }}</span></p>{% endif %}
+  <p style="white-space: pre-wrap">{{ entry.description }}</p>
+
+  {% if entry.people %}
+  <h2>People involved</h2>
+  <p>
+    {% for p in entry.people %}
+      <a href="{{ url_for('contacts.view_person', person_id=p.id) }}" class="tag">{{ p.name }}</a>
+    {% endfor %}
+  </p>
+  {% endif %}
+
+  {% if entry.evidence %}
+  <div class="page-header" style="margin-bottom: 0.5rem;">
+    <h2 style="margin: 0">Linked evidence</h2>
+    {% if entry.evidence|length > 1 %}
+      <a href="{{ url_for('evidence.download_all_for_entry', entry_id=entry.id) }}" class="btn btn-secondary btn-sm"
+        title="Download all {{ entry.evidence|length }} files as a zip">
+        {{ icons.download_all() }} Download all ({{ entry.evidence|length }})
+      </a>
+    {% endif %}
+  </div>
+  <ul class="evidence-list">
+    {% for ev in entry.evidence %}
+      <li>
+        <a href="{{ url_for('evidence.download', evidence_id=ev.id) }}" class="btn btn-secondary btn-sm"
+          title="Download {{ ev.original_filename }}">
+          {{ icons.download() }} {{ ev.original_filename }}
+        </a>
+        {% if ev.description %}<span class="ev-desc">{{ ev.description }}</span>{% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <p class="meta">
+    Added by {{ entry.created_by.username }} on {{ entry.created_at.strftime('%Y-%m-%d %H:%M') }}
+    {% if entry.updated_at %}
+      &middot; last edited by {{ entry.updated_by.username }} on {{ entry.updated_at.strftime('%Y-%m-%d %H:%M') }}
+    {% endif %}
+  </p>
+</div>
+
+<a href="{{ url_for('timeline.list_entries') }}">&larr; Back to timeline</a>
+{% endblock %}
